@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import TodoItem from './components/TodoItem'
 import Auth from './Auth'
-import { getToken, saveToken, clearToken, authHeaders } from './auth'
+import { getToken, saveToken, clearToken, authHeaders } from './tokenStore'
 import './App.css'
 
 const API = 'http://localhost:3003'
