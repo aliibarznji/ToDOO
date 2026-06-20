@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
-const API = 'http://localhost:3001'
+const API = 'http://localhost:3003'
 
 // One form that does both login and register. `onAuth` is called with the
 // token after success, so the parent (App) knows we're logged in.

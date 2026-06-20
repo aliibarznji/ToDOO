@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 const app = express()
-const PORT = 3001
+const PORT = process.env.PORT || 3003
 
 // Secret used to SIGN tokens. Real apps read this from an env var and NEVER
 // commit it. Generate one with:  openssl rand -hex 32

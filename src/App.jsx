@@ -5,7 +5,7 @@ import Auth from './Auth'
 import { getToken, saveToken, clearToken, authHeaders } from './auth'
 import './App.css'
 
-const API = 'http://localhost:3001'
+const API = 'http://localhost:3003'
 
 export default function App() {
   const [token, setToken] = useState(getToken()) // null = logged out
