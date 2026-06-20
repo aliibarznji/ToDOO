@@ -1,0 +1,49 @@
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background 0.1s;
+}
+
+.item:hover {
+  background: #f9f9f9;
+}
+
+.item__check {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+  accent-color: #111;
+  flex-shrink: 0;
+}
+
+.item__title {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #111;
+  word-break: break-word;
+}
+
+.item__title--done {
+  text-decoration: line-through;
+  color: #bbb;
+}
+
+.item__delete {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.item__delete:hover {
+  color: #e53935;
+  background: #ffeaea;
+}
