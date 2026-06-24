@@ -1,69 +1,45 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import TodoItem from './components/TodoItem'
-import Auth from './Auth'
-import { getToken, saveToken, clearToken, authHeaders } from './tokenStore'
 import './App.css'
 
-const API = 'http://localhost:3003'
+const KEY = 'todos'
+
+// ponytail: localStorage is the whole "backend" now. Swap for an API later if multi-device sync matters.
+function loadTodos() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY)) || []
+  } catch {
+    return []
+  }
+}
 
 export default function App() {
-  const [token, setToken] = useState(getToken()) // null = logged out
-  const [todos, setTodos] = useState([])
+  const [todos, setTodos] = useState(loadTodos)
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
 
-  // Load todos whenever we have a token (i.e. after login).
+  // Persist on every change so todos survive a refresh.
   useEffect(() => {
-    if (!token) return
-    fetch(`${API}/todos`, { headers: authHeaders() })
-      .then(res => {
-        if (res.status === 401) return logout() // token expired/invalid
-        return res.json()
-      })
-      .then(data => data && setTodos(data))
-  }, [token])
+    localStorage.setItem(KEY, JSON.stringify(todos))
+  }, [todos])
 
-  function login(newToken) {
-    saveToken(newToken)
-    setToken(newToken)
-  }
-
-  function logout() {
-    clearToken()
-    setToken(null)
-    setTodos([])
-  }
-
-  async function onSubmit({ title }) {
-    const res = await fetch(`${API}/todos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ title }),
-    })
-    const todo = await res.json()
-    setTodos(prev => [...prev, todo])
+  function onSubmit({ title }) {
+    setTodos(prev => [...prev, { id: crypto.randomUUID(), title, done: false }])
     reset()
   }
 
-  async function toggleTodo(id) {
-    const res = await fetch(`${API}/todos/${id}`, { method: 'PATCH', headers: authHeaders() })
-    const updated = await res.json()
-    setTodos(prev => prev.map(t => t.id === id ? updated : t))
+  function toggleTodo(id) {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
   }
 
-  async function deleteTodo(id) {
-    await fetch(`${API}/todos/${id}`, { method: 'DELETE', headers: authHeaders() })
+  function deleteTodo(id) {
     setTodos(prev => prev.filter(t => t.id !== id))
   }
-
-  // Not logged in -> show the auth screen instead of the todos.
-  if (!token) return <Auth onAuth={login} />
 
   return (
     <div className="card">
       <div className="card__header">
         <h1 className="card__title">ToDOO</h1>
-        <button className="form__btn" type="button" onClick={logout}>Log out</button>
       </div>
 
       <form className="form" onSubmit={handleSubmit(onSubmit)}>
