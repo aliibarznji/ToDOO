@@ -1,27 +1,53 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { getCurrentUser, getToken, removeToken } from './api/auth'
+import AuthForm from './components/AuthForm'
 import TodoItem from './components/TodoItem'
 import './App.css'
 
-const KEY = 'todos'
+const todosKey = userId => `todos:${userId}`
 
-// ponytail: localStorage is the whole "backend" now. Swap for an API later if multi-device sync matters.
-function loadTodos() {
+// Todos stay in localStorage for now; auth is handled by the API.
+function loadTodos(userId) {
   try {
-    return JSON.parse(localStorage.getItem(KEY)) || []
+    return JSON.parse(localStorage.getItem(todosKey(userId))) || []
   } catch {
     return []
   }
 }
 
 export default function App() {
-  const [todos, setTodos] = useState(loadTodos)
+  const [user, setUser] = useState(null)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(Boolean(getToken()))
+  const [todos, setTodos] = useState([])
+  const [activeTodoUserId, setActiveTodoUserId] = useState(null)
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+
+  useEffect(() => {
+    if (!getToken()) return
+
+    getCurrentUser()
+      .then(data => setUser(data.user))
+      .catch(() => removeToken())
+      .finally(() => setIsCheckingAuth(false))
+  }, [])
+
+  useEffect(() => {
+    if (user) {
+      setTodos(loadTodos(user.id))
+      setActiveTodoUserId(user.id)
+    } else {
+      setTodos([])
+      setActiveTodoUserId(null)
+    }
+  }, [user])
 
   // Persist on every change so todos survive a refresh.
   useEffect(() => {
-    localStorage.setItem(KEY, JSON.stringify(todos))
-  }, [todos])
+    if (user && activeTodoUserId === user.id) {
+      localStorage.setItem(todosKey(user.id), JSON.stringify(todos))
+    }
+  }, [todos, user, activeTodoUserId])
 
   function onSubmit({ title }) {
     setTodos(prev => [...prev, { id: crypto.randomUUID(), title, done: false }])
@@ -36,10 +62,29 @@ export default function App() {
     setTodos(prev => prev.filter(t => t.id !== id))
   }
 
+  function logout() {
+    removeToken()
+    setUser(null)
+  }
+
+  if (isCheckingAuth) {
+    return <div className="card">Checking your login...</div>
+  }
+
+  if (!user) {
+    return <AuthForm onAuth={setUser} />
+  }
+
   return (
     <div className="card">
       <div className="card__header">
-        <h1 className="card__title">ToDOO</h1>
+        <div>
+          <h1 className="card__title">ToDOO</h1>
+          <p className="card__meta">Signed in as {user.name}</p>
+        </div>
+        <button className="logout-btn" type="button" onClick={logout}>
+          Sign out
+        </button>
       </div>
 
       <form className="form" onSubmit={handleSubmit(onSubmit)}>

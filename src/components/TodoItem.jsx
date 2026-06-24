@@ -13,7 +13,7 @@ export default function TodoItem({ todo, onToggle, onDelete }) {
         {todo.title}
       </span>
       <button className="item__delete" onClick={() => onDelete(todo.id)} aria-label="Delete">
-        ✕
+        x
       </button>
     </li>
   )
